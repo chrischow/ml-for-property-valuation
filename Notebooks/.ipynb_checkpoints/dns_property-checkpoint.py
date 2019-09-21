@@ -242,7 +242,7 @@ def custom_cv(rgr, X, y, cv_obj, tfidf_cols, stop_words, norm=False, ppd=True):
     return (all_r2, all_rmse, all_mae, all_mape, all_ppd, all_plus05, all_plus10, all_plus20, ppd_data)
 
 # Predictions for Time Series
-def custom_ts(rgr, X, y, timevar, start, tfidf_cols, stop_words, dropout=0.1, norm=False, ppd=True, random_state=123):
+def custom_ts(rgr, X, y, timevar, start, tfidf_cols, stop_words, dropout=0.1, norm=False, ppd=True, plot=True, random_state=123):
     
     '''
     This function takes the following arguments:
@@ -405,52 +405,53 @@ def custom_ts(rgr, X, y, timevar, start, tfidf_cols, stop_words, dropout=0.1, no
     print()
     
     # Set up figure
-    fig = plt.figure(figsize=(15,15))
-    gs = plt.GridSpec(3, 4)
-    plt.subplots_adjust(bottom=0.0001)
+    if plot:
+        fig = plt.figure(figsize=(15,15))
+        gs = plt.GridSpec(3, 4)
+        plt.subplots_adjust(bottom=0.0001)
 
-    # Plot PPD
-    ax1 = fig.add_subplot(gs[0, 0:2])
-    ax1.plot(ts_test, np.array(all_ppd)*100, color='#133056')
-    ax1.set_title('Purchase Price Deviation (%)\nMean: ' + '{:.2f}%'.format(np.mean(np.array(all_ppd)*100)))
-    ax1.hlines(y=np.mean(np.array(all_ppd)*100), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
+        # Plot PPD
+        ax1 = fig.add_subplot(gs[0, 0:2])
+        ax1.plot(ts_test, np.array(all_ppd)*100, color='#133056')
+        ax1.set_title('Purchase Price Deviation (%)\nMean: ' + '{:.2f}%'.format(np.mean(np.array(all_ppd)*100)))
+        ax1.hlines(y=np.mean(np.array(all_ppd)*100), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
 
-    # Plot MAPE
-    ax2 = fig.add_subplot(gs[0, 2:4])
-    ax2.plot(ts_test, np.array(all_mape)*100, color='#133056')
-    ax2.set_title('Mean Absolute Percentage Error (%)\nMean: ' + '{:.2f}%'.format(np.mean(np.array(all_mape)*100)))
-    ax2.hlines(y=np.mean(np.array(all_mape)*100), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
+        # Plot MAPE
+        ax2 = fig.add_subplot(gs[0, 2:4])
+        ax2.plot(ts_test, np.array(all_mape)*100, color='#133056')
+        ax2.set_title('Mean Absolute Percentage Error (%)\nMean: ' + '{:.2f}%'.format(np.mean(np.array(all_mape)*100)))
+        ax2.hlines(y=np.mean(np.array(all_mape)*100), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
 
-    # Plot MAE
-    ax3 = fig.add_subplot(gs[1, 0:2])
-    ax3.plot(ts_test, all_mae, color='#133056')
-    ax3.set_title('Mean Absolute Error ($)\nMean: ' + '${:,.2f}'.format(np.mean(np.array(all_mae))))
-    ax3.hlines(y=np.mean(np.array(all_mae)), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
+        # Plot MAE
+        ax3 = fig.add_subplot(gs[1, 0:2])
+        ax3.plot(ts_test, all_mae, color='#133056')
+        ax3.set_title('Mean Absolute Error ($)\nMean: ' + '${:,.2f}'.format(np.mean(np.array(all_mae))))
+        ax3.hlines(y=np.mean(np.array(all_mae)), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
 
-    # Plot RMSE
-    ax4 = fig.add_subplot(gs[1, 2:4])
-    ax4.plot(ts_test, all_rmse, color='#133056')
-    ax4.set_title('Root Mean Squared Error ($)\nMean: ' + '${:,.2f}'.format(np.mean(np.array(all_rmse))))
-    ax4.hlines(y=np.mean(np.array(all_rmse)), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
-    
-    
-    
-    # Plot histogram
-    ax5 = fig.add_subplot(gs[2:4, :])
-    yhist, _,  _ = ax5.hist(ppd_hist*100, bins=60, color='#6fceb0', alpha=0.7)
-    ymax = np.max(yhist)
-    ax5.set_title('Purchase Price Deviation (%)')
-    ax5.vlines(x=5, ymin=0, ymax=ymax, linestyle='dashed', linewidth=1, color='#133056', label='Within 5%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist) < 0.05)*100))
-    ax5.vlines(x=-5, ymin=0, ymax=ymax, linestyle='dashed', linewidth=1, color='#133056')
-    ax5.vlines(x=10, ymin=0, ymax=ymax, linestyle='dotted', color='#f85b74', label='Within 10%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist) < 0.1)*100))
-    ax5.vlines(x=-10, ymin=0, ymax=ymax, linestyle='dotted', color='#f85b74')
-    ax5.vlines(x=20, ymin=0, ymax=ymax, linestyle='dotted', color='#ff9966', label='Within 20%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist)< 0.2)*100))
-    ax5.vlines(x=-20, ymin=0, ymax=ymax, linestyle='dotted', color='#ff9966')
-    ax5.legend()
-    
-    # Title
-    fig.suptitle('Model Results', fontsize=20, fontweight='bold')
-    plt.show()
+        # Plot RMSE
+        ax4 = fig.add_subplot(gs[1, 2:4])
+        ax4.plot(ts_test, all_rmse, color='#133056')
+        ax4.set_title('Root Mean Squared Error ($)\nMean: ' + '${:,.2f}'.format(np.mean(np.array(all_rmse))))
+        ax4.hlines(y=np.mean(np.array(all_rmse)), xmin=np.min(ts_test), xmax=np.max(ts_test), linestyle='dotted', color='red')
+
+
+
+        # Plot histogram
+        ax5 = fig.add_subplot(gs[2:4, :])
+        yhist, _,  _ = ax5.hist(ppd_hist*100, bins=60, color='#6fceb0', alpha=0.7)
+        ymax = np.max(yhist)
+        ax5.set_title('Purchase Price Deviation (%)')
+        ax5.vlines(x=5, ymin=0, ymax=ymax, linestyle='dashed', linewidth=1, color='#133056', label='Within 5%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist) < 0.05)*100))
+        ax5.vlines(x=-5, ymin=0, ymax=ymax, linestyle='dashed', linewidth=1, color='#133056')
+        ax5.vlines(x=10, ymin=0, ymax=ymax, linestyle='dotted', color='#f85b74', label='Within 10%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist) < 0.1)*100))
+        ax5.vlines(x=-10, ymin=0, ymax=ymax, linestyle='dotted', color='#f85b74')
+        ax5.vlines(x=20, ymin=0, ymax=ymax, linestyle='dotted', color='#ff9966', label='Within 20%: ' + '{:.2f}%'.format(np.mean(np.abs(ppd_hist)< 0.2)*100))
+        ax5.vlines(x=-20, ymin=0, ymax=ymax, linestyle='dotted', color='#ff9966')
+        ax5.legend()
+
+        # Title
+        fig.suptitle('Model Results', fontsize=20, fontweight='bold')
+        plt.show()
 
     # Print results
     print('[MODEL STATISTICS]')
